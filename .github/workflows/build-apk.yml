@@ -21,12 +21,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK & NDK
-        uses: android-actions/setup-android@v3
+      - name: Accept Android SDK Licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build Debug APK
         run: |
-          cd android
+          if [ -d "android" ]; then
+            cd android
+          elif [ -d "luanti-master/android" ]; then
+            cd luanti-master/android
+          else
+            echo "Could not find android directory!"
+            exit 1
+          fi
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
@@ -34,5 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: luanti-debug-apk
-          path: android/app/build/outputs/apk/debug/*.apk
-          
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            luanti-master/android/app/build/outputs/apk/debug/*.apk
+            
