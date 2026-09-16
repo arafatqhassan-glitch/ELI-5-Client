@@ -15,10 +15,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Build Dependencies (gettext / msgfmt)
+      - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gettext
+          sudo apt-get install -y gettext build-essential cmake ninja-build
 
       - name: Unzip Source Files (If present)
         run: |
@@ -39,12 +39,17 @@ jobs:
         run: |
           GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
           if [ -z "$GRADLEW_PATH" ]; then
-            echo "Error: gradlew file not found! Please check your ZIP upload."
+            echo "Error: gradlew file not found!"
             exit 1
           fi
           BUILD_DIR=$(dirname "$GRADLEW_PATH")
           echo "Found gradlew in: $BUILD_DIR"
           cd "$BUILD_DIR"
+          
+          # Force AndroidX properties
+          echo "android.useAndroidX=true" >> gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
+          
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
