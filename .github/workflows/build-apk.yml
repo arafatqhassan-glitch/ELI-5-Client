@@ -51,7 +51,6 @@ jobs:
           echo "android.enableJetifier=true" >> gradle.properties
           
           chmod +x gradlew
-          # Build assembleDebug without ABI splitting flags to output a single universal APK
           ./gradlew assembleDebug -Pandroid.startParameter.buildTargetAbi=none --no-daemon
 
       - name: Rename and Prepare Output File
