@@ -26,12 +26,13 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
+          packages: '' # Prevents setup-android from requesting the missing/deprecated 'tools' package
           accept-android-sdk-licenses: true
 
       - name: Install NDK, CMake, and Accept Licenses
         run: |
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
-          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1"
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1" "platform-tools"
 
       - name: Grant Execute Permission for Gradle
         run: chmod +x android/gradlew
