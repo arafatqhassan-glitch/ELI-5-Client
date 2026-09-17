@@ -23,13 +23,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android NDK & SDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          cmdline-tools-version: 8512546
+          accept-android-sdk-licenses: true
 
-      - name: Install NDK and CMake
+      - name: Install NDK, CMake, and Accept Licenses
         run: |
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
           ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1"
 
       - name: Grant Execute Permission for Gradle
@@ -40,7 +41,7 @@ jobs:
           cd android
           ./gradlew assembleDebug --stacktrace
         env:
-          ANDROID_NDK_HOME: ${{ runner.workspace }}/android-sdk/ndk/25.2.9519653
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.2.9519653
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
