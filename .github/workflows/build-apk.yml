@@ -26,7 +26,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: '' # Prevents setup-android from requesting the missing/deprecated 'tools' package
+          packages: '' # Stops setup-android from asking for deprecated 'tools'
           accept-android-sdk-licenses: true
 
       - name: Install NDK, CMake, and Accept Licenses
@@ -35,11 +35,10 @@ jobs:
           ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1" "platform-tools"
 
       - name: Grant Execute Permission for Gradle
-        run: chmod +x android/gradlew
+        run: chmod +x gradlew
 
       - name: Build Android APK
         run: |
-          cd android
           ./gradlew assembleDebug --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.2.9519653
@@ -47,6 +46,6 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ELI-5-Client-Debug-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: ELI-5-Client-Universal-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
           
