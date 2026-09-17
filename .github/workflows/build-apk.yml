@@ -26,7 +26,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: '' # Stops setup-android from asking for deprecated 'tools'
+          packages: ''
           accept-android-sdk-licenses: true
 
       - name: Install NDK, CMake, and Accept Licenses
@@ -34,18 +34,27 @@ jobs:
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
           ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1" "platform-tools"
 
-      - name: Grant Execute Permission for Gradle
-        run: chmod +x gradlew
-
-      - name: Build Android APK
+      - name: Find Gradlew and Grant Execute Permission
         run: |
-          ./gradlew assembleDebug --stacktrace
+          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "Error: gradlew file not found in repository!"
+            exit 1
+          fi
+          echo "Found gradlew at: $GRADLEW_PATH"
+          chmod +x "$GRADLEW_PATH"
+          echo "GRADLEW_DIR=$(dirname "$GRADLEW_PATH")" >> $GITHUB_ENV
+
+      - name: Build Universal Android APK (32-bit and 64-bit)
+        run: |
+          cd $GRADLEW_DIR
+          ./gradlew app:assembleDebug --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.2.9519653
 
-      - name: Upload APK Artifact
+      - name: Upload Universal Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: ELI-5-Client-Universal-Debug-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: "**/build/outputs/apk/debug/*.apk"
           
