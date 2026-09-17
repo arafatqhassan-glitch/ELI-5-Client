@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Android Build
 
 on:
   push:
@@ -14,16 +14,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
-
-      - name: Extract source.zip if Present
-        run: |
-          if [ -f "source.zip" ]; then
-            echo "Found source.zip, extracting..."
-            unzip -q source.zip
-          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -37,37 +27,29 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: ''
+          packages: '' # CRITICAL: Disables loading the deprecated 'tools' package
           accept-android-sdk-licenses: true
 
-      - name: Install NDK, CMake, and Accept Licenses
+      - name: Install NDK, CMake, and Extract Source
         run: |
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
           ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1" "platform-tools"
-
-      - name: Locate Project and Build Universal APK
-        run: |
-          # Locate build.gradle directory
-          GRADLE_FILE=$(find . -name "build.gradle" -o -name "settings.gradle" | head -n 1)
-          
-          if [ -z "$GRADLE_FILE" ]; then
-            echo "Error: Could not locate build.gradle even after extracting source.zip."
-            exit 1
+          if [ -f "source.zip" ]; then
+            unzip -q source.zip
           fi
 
-          BUILD_DIR=$(dirname "$GRADLE_FILE")
-          echo "Found project directory at: $BUILD_DIR"
+      - name: Build Universal Debug APK
+        run: |
+          BUILD_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
           cd "$BUILD_DIR"
-
-          # Generate wrapper and assemble debug APK
           gradle wrapper
           ./gradlew assembleDebug --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.2.9519653
 
-      - name: Upload Universal Debug APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: ELI-5-Client-Universal-Debug-APK
+          name: ELI-5-Client-Debug-APK
           path: "**/build/outputs/apk/debug/*.apk"
           
