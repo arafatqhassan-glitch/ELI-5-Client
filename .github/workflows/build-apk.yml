@@ -24,21 +24,21 @@ jobs:
       - name: Setup System Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: ''
-          accept-android-sdk-licenses: true
-
-      - name: Install NDK, CMake, and Extract Source
+      - name: Install Android NDK, CMake & Accept ALL Licenses
         run: |
-          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
+          # Automatically accept every SDK license non-interactively
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          
+          # Install targeted NDK, CMake, and Platform Tools
           ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1" "platform-tools"
+
+      - name: Extract source.zip
+        run: |
           if [ -f "source.zip" ]; then
             unzip -o -q source.zip
           fi
 
-      - name: Build Universal Debug APK
+      - name: Build Universal Debug APK (arm64-v8a & armeabi-v7a)
         run: |
           BUILD_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
           cd "$BUILD_DIR"
@@ -51,4 +51,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ELI-5-Client-Debug-APK
-          path: "**/build/outputs/apk/debug/*.apk
+          path: "**/build/outputs/apk/debug/*.apk"
+          
