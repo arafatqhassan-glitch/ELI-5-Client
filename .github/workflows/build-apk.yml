@@ -21,15 +21,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup System Gradle
+      - name: Setup Compatible Gradle (8.5)
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
 
       - name: Install Android NDK, CMake & Accept ALL Licenses
         run: |
-          # Automatically accept every SDK license non-interactively
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          
-          # Install targeted NDK, CMake, and Platform Tools
           ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1" "platform-tools"
 
       - name: Extract source.zip
@@ -42,7 +41,7 @@ jobs:
         run: |
           BUILD_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
           cd "$BUILD_DIR"
-          gradle wrapper
+          gradle wrapper --gradle-version 8.5
           ./gradlew assembleDebug --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.2.9519653
