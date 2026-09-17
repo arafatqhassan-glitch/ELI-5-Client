@@ -27,7 +27,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: '' # CRITICAL: Disables loading the deprecated 'tools' package
+          packages: ''
           accept-android-sdk-licenses: true
 
       - name: Install NDK, CMake, and Extract Source
@@ -35,7 +35,7 @@ jobs:
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
           ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "cmake;3.22.1" "platform-tools"
           if [ -f "source.zip" ]; then
-            unzip -q source.zip
+            unzip -o -q source.zip
           fi
 
       - name: Build Universal Debug APK
@@ -51,5 +51,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ELI-5-Client-Debug-APK
-          path: "**/build/outputs/apk/debug/*.apk"
-          
+          path: "**/build/outputs/apk/debug/*.apk
