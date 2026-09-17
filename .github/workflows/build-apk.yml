@@ -18,9 +18,12 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Ensure Submodules are Loaded
+      - name: Extract source.zip if Present
         run: |
-          git submodule update --init --recursive || true
+          if [ -f "source.zip" ]; then
+            echo "Found source.zip, extracting..."
+            unzip -q source.zip
+          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -44,13 +47,11 @@ jobs:
 
       - name: Locate Project and Build Universal APK
         run: |
-          # Locate build.gradle or default to root '.'
+          # Locate build.gradle directory
           GRADLE_FILE=$(find . -name "build.gradle" -o -name "settings.gradle" | head -n 1)
           
           if [ -z "$GRADLE_FILE" ]; then
-            echo "--- Repository Root Directory Structure ---"
-            ls -la
-            echo "Error: Could not locate build.gradle in repository."
+            echo "Error: Could not locate build.gradle even after extracting source.zip."
             exit 1
           fi
 
@@ -58,7 +59,7 @@ jobs:
           echo "Found project directory at: $BUILD_DIR"
           cd "$BUILD_DIR"
 
-          # Generate Gradle wrapper and build multi-arch APK
+          # Generate wrapper and assemble debug APK
           gradle wrapper
           ./gradlew assembleDebug --stacktrace
         env:
